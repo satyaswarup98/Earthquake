@@ -27,10 +27,9 @@ public class QueryUtils {
     }
 
     public static ArrayList<Earthquake> fetchEarthquakeData(String requestUrl) {
-        // Create URL object
+
         URL url = createUrl(requestUrl);
 
-        // Perform HTTP request to the URL and receive a JSON response back
         String jsonResponse = null;
         try {
             jsonResponse = makeHttpRequest(url);
@@ -38,10 +37,8 @@ public class QueryUtils {
             //Log.e(LOG_TAG, "Problem making the HTTP request.", e);
         }
 
-        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
         ArrayList<Earthquake> earthquakes = extractFeatureFromJson(jsonResponse);
 
-        // Return the list of {@link Earthquake}s
         return earthquakes;
     }
 
