@@ -1,10 +1,5 @@
 package com.example.quakereport;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.loader.app.LoaderManager;
-import androidx.loader.content.Loader;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -21,12 +15,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import java.io.IOException;
-import java.net.URL;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.Loader;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class EarthquakeActivity extends AppCompatActivity
@@ -75,11 +71,27 @@ public class EarthquakeActivity extends AppCompatActivity
             loadingIndicator.setVisibility(View.GONE);
             mEmptyStateImageView.setImageResource(R.raw.no_internet);
         }
+
+        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.swiperefresh);
+        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mAdapter.clear();
+                mEmptyStateImageView.setVisibility(View.GONE);
+
+                View loadingIndicator = findViewById(R.id.loading_indicator);
+                loadingIndicator.setVisibility(View.VISIBLE);
+
+                getSupportLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, EarthquakeActivity.this);
+
+                pullToRefresh.setRefreshing(false);
+            }
+        });
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        if (key.equals(getString(R.string.settings_min_magnitude_key)) ||  key.equals(getString(R.string.settings_order_by_key))){
+        if (key.equals(getString(R.string.settings_min_magnitude_key)) || key.equals(getString(R.string.settings_order_by_key))) {
 
             mAdapter.clear();
             mEmptyStateImageView.setVisibility(View.GONE);
@@ -137,7 +149,6 @@ public class EarthquakeActivity extends AppCompatActivity
     public void onLoaderReset(@NonNull Loader<ArrayList<Earthquake>> loader) {
         mAdapter.clear();
     }
-
 
 
     @Override
