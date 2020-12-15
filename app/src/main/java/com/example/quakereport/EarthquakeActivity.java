@@ -49,6 +49,8 @@ public class EarthquakeActivity extends AppCompatActivity
         mAdapter = new EarthquakeAdapter(this, new ArrayList<Earthquake>());
         earthquakeListView.setAdapter(mAdapter);
 
+
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
@@ -62,9 +64,7 @@ public class EarthquakeActivity extends AppCompatActivity
             }
         });
 
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
+        if(checkConnection()){
             getSupportLoaderManager().initLoader(EARTHQUAKE_LOADER_ID, null, this);
         } else {
             View loadingIndicator = findViewById(R.id.loading_indicator);
@@ -72,34 +72,53 @@ public class EarthquakeActivity extends AppCompatActivity
             mEmptyStateImageView.setImageResource(R.raw.no_internet);
         }
 
-        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.swiperefresh);
-        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mAdapter.clear();
-                mEmptyStateImageView.setVisibility(View.GONE);
-
-                View loadingIndicator = findViewById(R.id.loading_indicator);
-                loadingIndicator.setVisibility(View.VISIBLE);
-
-                getSupportLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, EarthquakeActivity.this);
-
-                pullToRefresh.setRefreshing(false);
-            }
-        });
+//        final SwipeRefreshLayout pullToRefresh = findViewById(R.id.swiperefresh);
+//        pullToRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                View loadingIndicator = findViewById(R.id.loading_indicator);
+//
+//                if(checkConnection()){
+//                    mAdapter.clear();
+//                    mEmptyStateImageView.setVisibility(View.GONE);
+//                    loadingIndicator.setVisibility(View.VISIBLE);
+//
+//                    getSupportLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, EarthquakeActivity.this);
+//                } else {
+//                    loadingIndicator.setVisibility(View.GONE);
+//                    mEmptyStateImageView.setImageResource(R.raw.no_internet);
+//                }
+//                pullToRefresh.setRefreshing(false);
+//            }
+//        });
     }
 
+    private boolean checkConnection(){
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @SuppressLint("ResourceType")
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(getString(R.string.settings_min_magnitude_key)) || key.equals(getString(R.string.settings_order_by_key))) {
-
-            mAdapter.clear();
-            mEmptyStateImageView.setVisibility(View.GONE);
-
             View loadingIndicator = findViewById(R.id.loading_indicator);
-            loadingIndicator.setVisibility(View.VISIBLE);
 
-            getSupportLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, this);
+            if(checkConnection()){
+                mAdapter.clear();
+                mEmptyStateImageView.setVisibility(View.GONE);
+                loadingIndicator.setVisibility(View.VISIBLE);
+
+                getSupportLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, this);
+            } else {
+                loadingIndicator.setVisibility(View.GONE);
+                mEmptyStateImageView.setImageResource(R.raw.no_internet);
+            }
         }
     }
 
